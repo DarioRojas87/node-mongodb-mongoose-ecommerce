@@ -7,6 +7,7 @@ exports.getLogin = (req, res, next) => {
     path: "/login",
     pageTitle: "Login",
     isAuthenticated: false,
+    errorMessage: req.flash("error")[0],
   });
 };
 
@@ -15,6 +16,7 @@ exports.getSignup = (req, res, next) => {
     path: "/signup",
     pageTitle: "Signup",
     isAuthenticated: false,
+    errorMessage: req.flash("error")[0],
   });
 };
 
@@ -24,6 +26,7 @@ exports.postLogin = (req, res, next) => {
   User.findOne({ email: email })
     .then((user) => {
       if (!user) {
+        req.flash("error", "Invalid email or password.");
         return res.redirect("/login");
       }
       compare(password, user.password)
@@ -35,6 +38,7 @@ exports.postLogin = (req, res, next) => {
               return res.redirect("/");
             });
           }
+          req.flash("error", "Invalid email or password.");
           res.redirect("/login");
         })
         .catch((err) => {
@@ -60,6 +64,7 @@ exports.postSignup = (req, res, next) => {
   User.findOne({ email: email })
     .then((userDoc) => {
       if (userDoc) {
+        req.flash("error", "Email already exists.");
         return res.redirect("/signup");
       }
       return hash(password, 12)
