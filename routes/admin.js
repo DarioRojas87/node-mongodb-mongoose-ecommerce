@@ -21,7 +21,6 @@ router.post(
     check("title").isString().isLength({ min: 3 }).trim(),
     check("price").isFloat(),
     check("description").isLength({ min: 5, max: 400 }).trim(),
-    check("imageUrl").isURL(),
   ],
   isAuth,
   adminController.postAddProduct
@@ -35,7 +34,6 @@ router.post(
     check("title").isString().isLength({ min: 3 }).trim(),
     check("price").isFloat(),
     check("description").isLength({ min: 5, max: 400 }).trim(),
-    check("imageUrl").isURL(),
   ],
   isAuth,
   adminController.postEditProduct
