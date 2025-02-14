@@ -7,13 +7,29 @@ const PDFDocument = require("pdfkit");
 
 const path = require("path");
 
+const ITEMS_PER_PAGE = 1;
+
 exports.getProducts = (req, res, next) => {
-  Product.find()
+  const page = +req.query.page || 1;
+  let totalItems;
+  Product.countDocuments()
+    .then((numProducts) => {
+      totalItems = numProducts;
+      return Product.find()
+        .skip((page - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then((products) => {
       res.render("shop/product-list", {
         prods: products,
-        pageTitle: "All Products",
+        pageTitle: "Products",
         path: "/products",
+        currentPage: page,
+        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
       });
     })
     .catch((err) => {
@@ -41,12 +57,26 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.find()
+  const page = +req.query.page || 1;
+  let totalItems;
+  Product.countDocuments()
+    .then((numProducts) => {
+      totalItems = numProducts;
+      return Product.find()
+        .skip((page - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then((products) => {
       res.render("shop/index", {
         prods: products,
         pageTitle: "Shop",
         path: "/",
+        currentPage: page,
+        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
       });
     })
     .catch((err) => {
@@ -192,50 +222,10 @@ exports.getInvoice = (req, res, next) => {
       pdfDoc.fontSize(20).text("Total Price: $" + totalPrice);
 
       pdfDoc.end();
-      // readFile(invoicePath, (err, data) => {
-      //   if (err) {
-      //     return next(err);
-      //   }
-      //   res.setHeader("Content-Type", "application/pdf");
-      //   res.setHeader(
-      //     "Content-Disposition",
-      //     'inline; filename="' + invoiceName + '"'
-      //   );
-      //   res.send(data);
-      // });
-      // const file = createReadStream(invoicePath);
-
-      // file.pipe(res);
     })
     .catch((err) => {
       const error = new Error(err);
       error.httpStatusCode = 500;
       return next(error);
     });
-
-  // Order.findById(orderId)
-  //   .then((order) => {
-  //     if (!order) {
-  //       return next(new Error("No order found."));
-  //     }
-  //     if (order.user.userId.toString() !== req.user._id.toString()) {
-  //       return next(new Error("Unauthorized"));
-  //     }
-  //     const invoiceName = "invoice-" + orderId + ".pdf";
-  //     const invoicePath = path.join("data", "invoices", invoiceName);
-  //     fs.readFile(invoicePath, (err, data) => {
-  //       if (err) {
-  //         console.log(err);
-  //         return next(err);
-  //       }
-
-  //       res.setHeader("Content-Type", "application/pdf");
-  //       res.setHeader(
-  //         "Content-Disposition",
-  //         'inline; filename="' + invoiceName + '"'
-  //       );
-  //       res.send(data);
-  //     });
-  //   })
-  //   .catch((err) => next(err));
 };
